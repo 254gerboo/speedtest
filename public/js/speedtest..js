@@ -50,6 +50,6 @@
   // expose
   window.SpeedTest = {
     testLatency,
-    downloadTest
+    downloadTest 
   };
 })(window);
