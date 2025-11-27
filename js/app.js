@@ -1,65 +1,41 @@
-const SpeedTest = {
-    latencySamples: 5,
-    downloadStreams: 8,
-    testDuration: 7, // seconds
+document.getElementById("startBtn").addEventListener("click", async () => {
+    const startBtn = document.getElementById("startBtn");
+    const resultEl = document.getElementById("result");
+    const latencyEl = document.getElementById("latency");
+    const downloadedEl = document.getElementById("downloaded");
+    const durationEl = document.getElementById("duration");
+    const gauge = document.getElementById("gauge");
 
-    async testLatency(url) {
-        let samples = [];
+    resultEl.textContent = "Testing...";
+    gauge.style.width = "0%";
+    startBtn.disabled = true;
 
-        for (let i = 0; i < this.latencySamples; i++) {
-            const t0 = performance.now();
-            await fetch(url + "?cache=" + Math.random(), { method: "HEAD" });
-            samples.push(performance.now() - t0);
-        }
+    try {
+        const testUrl = "https://proof.ovh.net/files/10Mb.dat"; // Public test file
 
-        samples.sort((a,b) => a - b);
-        const trimmed = samples.slice(1, samples.length - 1);
+        // 1️⃣ Test latency (tiny fetch)
+        const latency = await SpeedTest.testLatency(testUrl);
+        latencyEl.textContent = latency.toFixed(1) + " ms";
 
-        return (trimmed.reduce((a,b) => a + b) / trimmed.length).toFixed(1);
-    },
+        // 2️⃣ Run download test (6 parallel streams)
+        const start = performance.now();
+        const res = await SpeedTest.downloadTest(testUrl, 6, (bytes) => {
+            downloadedEl.textContent = (bytes / 1024 / 1024).toFixed(2) + " MB";
+        });
+        const end = performance.now();
 
-    async downloadTest(url, onProgress) {
-        let totalBytes = 0;
-        let abort = false;
+        // 3️⃣ Show results
+        resultEl.textContent = res.mbps.toFixed(1) + " Mbps";
+        durationEl.textContent = ((end - start)/1000).toFixed(1) + " s";
 
-        const controllers = [];
-        const startTime = performance.now();
+        // Animate gauge (max 100 Mbps visual)
+        let percent = Math.min(100, res.mbps);
+        gauge.style.width = percent + "%";
 
-        const runStream = async () => {
-            const controller = new AbortController();
-            controllers.push(controller);
-
-            while (!abort) {
-                const res = await fetch(url + "?cache=" + Math.random(),
-                    { signal: controller.signal });
-
-                const reader = res.body.getReader();
-
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done || abort) break;
-
-                    totalBytes += value.length;
-                    onProgress(totalBytes);
-                }
-            }
-        };
-
-        const workers = [];
-        for (let i = 0; i < this.downloadStreams; i++) {
-            workers.push(runStream());
-        }
-
-        await new Promise(res => setTimeout(res, this.testDuration * 1000));
-
-        abort = true;
-        controllers.forEach(c => c.abort());
-
-        await Promise.allSettled(workers);
-
-        const secs = (performance.now() - startTime) / 1000;
-        const mbps = (totalBytes * 8) / 1e6 / secs;
-
-        return { mbps, secs, bytes: totalBytes };
+    } catch (err) {
+        resultEl.textContent = "Error running test";
+        console.error(err);
+    } finally {
+        startBtn.disabled = false;
     }
-};
+});

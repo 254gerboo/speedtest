@@ -1,65 +1,43 @@
 const SpeedTest = {
-    latencySamples: 5,
-    downloadStreams: 8,
-    testDuration: 7, // seconds
-
     async testLatency(url) {
-        let samples = [];
-
-        for (let i = 0; i < this.latencySamples; i++) {
-            const t0 = performance.now();
-            await fetch(url + "?cache=" + Math.random(), { method: "HEAD" });
-            samples.push(performance.now() - t0);
+        const samples = 5;
+        let total = 0;
+        for (let i = 0; i < samples; i++) {
+            const start = performance.now();
+            await fetch(url, { method: 'HEAD', cache: 'no-cache' });
+            const end = performance.now();
+            total += (end - start);
         }
-
-        samples.sort((a,b) => a - b);
-        const trimmed = samples.slice(1, samples.length - 1);
-
-        return (trimmed.reduce((a,b) => a + b) / trimmed.length).toFixed(1);
+        return total / samples;
     },
 
-    async downloadTest(url, onProgress) {
+    async downloadTest(url, parallel = 4, onProgress = null) {
         let totalBytes = 0;
-        let abort = false;
+        const promises = [];
 
-        const controllers = [];
-        const startTime = performance.now();
-
-        const runStream = async () => {
-            const controller = new AbortController();
-            controllers.push(controller);
-
-            while (!abort) {
-                const res = await fetch(url + "?cache=" + Math.random(),
-                    { signal: controller.signal });
-
-                const reader = res.body.getReader();
-
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done || abort) break;
-
-                    totalBytes += value.length;
-                    onProgress(totalBytes);
-                }
-            }
-        };
-
-        const workers = [];
-        for (let i = 0; i < this.downloadStreams; i++) {
-            workers.push(runStream());
+        for (let i = 0; i < parallel; i++) {
+            promises.push(fetch(url, { cache: 'no-cache' })
+                .then(resp => {
+                    const reader = resp.body.getReader();
+                    let loaded = 0;
+                    return reader.read().then(function process({ done, value }) {
+                        if (done) return;
+                        loaded += value.length;
+                        totalBytes += value.length;
+                        if (onProgress) onProgress(totalBytes);
+                        return reader.read().then(process);
+                    });
+                })
+            );
         }
 
-        await new Promise(res => setTimeout(res, this.testDuration * 1000));
+        const startTime = performance.now();
+        await Promise.all(promises);
+        const endTime = performance.now();
 
-        abort = true;
-        controllers.forEach(c => c.abort());
+        const durationSecs = (endTime - startTime) / 1000;
+        const mbps = (totalBytes * 8 / 1e6) / durationSecs; // Megabits per second
 
-        await Promise.allSettled(workers);
-
-        const secs = (performance.now() - startTime) / 1000;
-        const mbps = (totalBytes * 8) / 1e6 / secs;
-
-        return { mbps, secs, bytes: totalBytes };
+        return { mbps, secs: durationSecs, bytes: totalBytes };
     }
 };
