@@ -1,33 +1,65 @@
-// public/js/app.js
+const SpeedTest = {
+    latencySamples: 5,
+    downloadStreams: 8,
+    testDuration: 7, // seconds
 
-document.getElementById("startBtn").addEventListener("click", async () => {
-    const resultEl = document.getElementById("result");
-    const latencyEl = document.getElementById("latency");
-    const downloadedEl = document.getElementById("downloaded");
-    const durationEl = document.getElementById("duration");
-    const gauge = document.getElementById("gauge");
+    async testLatency(url) {
+        let samples = [];
 
-    resultEl.textContent = "Testing...";
-    gauge.style.width = "0%";
+        for (let i = 0; i < this.latencySamples; i++) {
+            const t0 = performance.now();
+            await fetch(url + "?cache=" + Math.random(), { method: "HEAD" });
+            samples.push(performance.now() - t0);
+        }
 
-    // 1. Test latency
-    const latency = await SpeedTest.testLatency("/testfile.bin");
-    latencyEl.textContent = latency + " ms";
+        samples.sort((a,b) => a - b);
+        const trimmed = samples.slice(1, samples.length - 1);
 
-    // 2. Run download test
-    const res = await SpeedTest.downloadTest("/testfile.bin", 6, (bytes) => {
-        downloadedEl.textContent = bytes + " bytes";
-    });
+        return (trimmed.reduce((a,b) => a + b) / trimmed.length).toFixed(1);
+    },
 
-    // 3. Show results
-    resultEl.textContent = res.mbps + " Mbps";
-    durationEl.textContent = res.secs + " s";
+    async downloadTest(url, onProgress) {
+        let totalBytes = 0;
+        let abort = false;
 
-    // Animate gauge (max 100 Mbps visual)
-    let percent = Math.min(100, res.Mbps);
-    gauge.style.widgth = percent + "%";
-    console.error(err);
-} finally {
-    startBtn.disabled = false;
-}
-);
+        const controllers = [];
+        const startTime = performance.now();
+
+        const runStream = async () => {
+            const controller = new AbortController();
+            controllers.push(controller);
+
+            while (!abort) {
+                const res = await fetch(url + "?cache=" + Math.random(),
+                    { signal: controller.signal });
+
+                const reader = res.body.getReader();
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done || abort) break;
+
+                    totalBytes += value.length;
+                    onProgress(totalBytes);
+                }
+            }
+        };
+
+        const workers = [];
+        for (let i = 0; i < this.downloadStreams; i++) {
+            workers.push(runStream());
+        }
+
+        await new Promise(res => setTimeout(res, this.testDuration * 1000));
+
+        abort = true;
+        controllers.forEach(c => c.abort());
+
+        await Promise.allSettled(workers);
+
+        const secs = (performance.now() - startTime) / 1000;
+        const mbps = (totalBytes * 8) / 1e6 / secs;
+
+        return { mbps, secs, bytes: totalBytes };
+    }
+};
