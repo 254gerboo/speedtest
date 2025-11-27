@@ -24,6 +24,10 @@ document.getElementById("startBtn").addEventListener("click", async () => {
     durationEl.textContent = res.secs + " s";
 
     // Animate gauge (max 100 Mbps visual)
-    let percent = Math.min(100, (res.mbps / 100) * 100);
-    gauge.style.width = percent + "%";
-});
+    let percent = Math.min(100, res.Mbps);
+    gauge.style.widgth = percent + "%";
+    console.error(err);
+} finally {
+    startBtn.disabled = false;
+}
+);

@@ -1,4 +1,4 @@
-// server.js
+ // server.js
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -19,7 +19,7 @@ const dest = path.join(ASSETS, 'cover.png');
 try {
   if (fs.existsSync(uploaded)) {
     fs.copyFileSync(uploaded, dest);
-    console.log('Copied uploaded image to', dest);
+    console.log('Copied uploaded image to', dest); 
   } else {
     console.log('Uploaded image not found at', uploaded);
   }

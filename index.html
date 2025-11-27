@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SpeedCheck Lite</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <img src="/assets/cover.png" alt="speedCheck Lite Logo" class="logo" id="logo">
+      <div>
+        <h1 class="title">SpeedCheck Lite</h1>
+        <p class="subtitle">Quick local bandwidth test — development only</p>
+      </div>
+    </header>
+
+    <section class="card meter">
+      <div class="meter-content">
+        <div class="gauge-wrap"><div id="gauge" class="gauge"></div></div>
+        <div class="result" id="result">- Mbps</div>
+      </div>
+      </section>
+    <section class="controls">
+      <button id="startBtn" class="btn" aria-label="Start Test">Start Test</button>
+      <p class="small-muted">Click to measure download bandwidth</p>
+    </section>
+
+    <section class="details" id="details">
+      <div class="item"><span class="small-muted">Latency</span><span class="value" id="latency">—</span></div>
+      <div class="item"><span class="small-muted">Downloaded</span><span class="value" id="downloaded">0</span></div>
+      <div class="item"><span class="small-muted">Duration</span><span class="value" id="duration">0</span></div>
+    </section>
+    <footer class="footer">Built for testing • Keep this local only</footer>
+  </div>
+
+  <script src="/js/speedtest.js" defer></script>
+  <script src="/js/app.js" defer></script>
+</body>
+</html>
