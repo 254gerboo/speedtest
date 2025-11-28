@@ -11,11 +11,11 @@ document.getElementById("startBtn").addEventListener("click", async () => {
     startBtn.disabled = true;
 
     try {
-        const testUrl = "https://proof.ovh.net/files/10Mb.dat"; // Public test file
+        const testUrl = "http://127.0.0.1:5500/?Run=10"; // Public test file
 
         // 1️⃣ Test latency (tiny fetch)
         const latency = await SpeedTest.testLatency(testUrl);
-        latencyEl.textContent = latency.toFixed(1) + " ms";
+        latencyEl.textContent = latency.fixed(1) + " ms";
 
         // 2️⃣ Run download test (6 parallel streams)
         const start = performance.now();
