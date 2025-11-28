@@ -15,11 +15,11 @@ document.getElementById("startBtn").addEventListener("click", async () => {
 
         // 1️⃣ Test latency (tiny fetch)
         const latency = await SpeedTest.testLatency(testUrl);
-        latencyEl.textContent = latency.fixed(1) + " ms";
+        latencyEl.textContent = (Number(latency).toFixed(1)) + " ms";
 
         // 2️⃣ Run download test (6 parallel streams)
         const start = performance.now();
-        const res = await SpeedTest.downloadTest(testUrl, 6, (bytes) => {
+        const res = await SpeedTest.downloadTest(testUrl, (bytes) => {
             downloadedEl.textContent = (bytes / 1024 / 1024).toFixed(2) + " MB";
         });
         const end = performance.now();

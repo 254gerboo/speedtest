@@ -29,19 +29,39 @@ const SpeedTest = {
             const controller = new AbortController();
             controllers.push(controller);
 
-            while (!abort) {
-                const res = await fetch(url + "?cache=" + Math.random(),
-                    { signal: controller.signal });
+            try {
+                while (!abort) {
+                    let res;
+                    try {
+                        res = await fetch(url + "?cache=" + Math.random(), { signal: controller.signal });
+                    } catch (err) {
+                        if (controller.signal.aborted) break;
+                        break;
+                    }
 
-                const reader = res.body.getReader();
+                    if (!res || !res.body) {
+                        // No readable body (may happen with some responses) — stop this stream iteration
+                        break;
+                    }
 
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done || abort) break;
+                    const reader = res.body.getReader();
 
-                    totalBytes += value.length;
-                    onProgress(totalBytes);
+                    try {
+                        while (true) {
+                            const { value, done } = await reader.read();
+                            if (done || abort) break;
+
+                            const chunkLen = value ? (value.byteLength ?? value.length ?? 0) : 0;
+                            totalBytes += chunkLen;
+                            if (typeof onProgress === 'function') onProgress(totalBytes);
+                        }
+                    } catch (readErr) {
+                        // reading failed (possibly due to abort) — stop this stream
+                        break;
+                    }
                 }
+            } catch (err) {
+                // swallow unexpected errors from this worker to avoid crashing the whole test
             }
         };
 
