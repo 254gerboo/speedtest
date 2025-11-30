@@ -2,10 +2,14 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
+
+// Allow all origins (dev only)
+app.use(cors());
 
 const app = express();
 const PUBLIC = path.join(__dirname, 'public');
-const ASSETS = path.join(__dirname, 'assets');
+const ASSETS = path.join(__dirname, 'assets1');
 
 // serve static
 app.use(express.static(PUBLIC));
@@ -14,7 +18,7 @@ app.use(express.static(PUBLIC));
 if (!fs.existsSync(ASSETS)) fs.mkdirSync(ASSETS);
 
 // If you want to use the uploaded image as /assets/cover.png, we try to copy it into assets (best-effort).
-const uploaded = '/mnt/data/A_promotional_digital_graphic_design_cover_artwork.png';
+const uploaded = '/assets1/cover.png';
 const dest = path.join(ASSETS, 'cover.png');
 try {
   if (fs.existsSync(uploaded)) {
