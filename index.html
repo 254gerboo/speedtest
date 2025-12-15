@@ -1,42 +1,54 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SpeedCheck Lite</title>
-  <link rel="stylesheet" href="public/css/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>speedtest</title>
+
+  <!-- FIXED PATH (remove leading / so public folder is reachable) -->
+  <link rel="stylesheet" href="public/css/style.css" />
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <img src="public/assets1/cover.png" alt="speedCheck Lite Logo" class="logo" id="logo">
-      <div>
-        <h1 class="title">SpeedCheck Lite</h1>
-        <p class="subtitle">Quick local bandwidth test — development only</p>
-      </div>
+  <div id="snow"></div>
+
+
+
+  <div class="wrap">
+    <header>
+      <h1>speedtest</h1>
+      <p class="sub">Simple network speed test (download • upload • latency)</p>
     </header>
 
-    <section class="card meter">
-      <div class="meter-content">
-        <div class="gauge-wrap"><div id="gauge" class="gauge"></div></div>
-        <div class="result" id="result">- Mbps</div>
-      </div>
-      </section>
-    <section class="controls">
-      <button id="startBtn" class="btn" aria-label="Start Test">Start Test</button>
-      <p class="small-muted">Click to measure download bandwidth</p>
-    </section>
+    <main>
+      <div class="meter">
+        <div id="speed" class="speed">0 Mbps</div>
 
-    <section class="details" id="details">
-      <div class="item"><span class="small-muted">Latency</span><span class="value" id="latency">—</span></div>
-      <div class="item"><span class="small-muted">Downloaded</span><span class="value" id="downloaded">0</span></div>
-      <div class="item"><span class="small-muted">Duration</span><span class="value" id="duration">0</span></div>
-    </section>
-    <footer class="footer">Built for testing • Keep this local only</footer>
+        <div class="controls">
+          <button id="startBtn">Start Test</button>
+          <button id="showMore">Show More</button>
+        </div>
+
+        <div id="gauge" class="gauge"></div>
+      </div>
+
+      <!-- DETAILS BOX (Initially hidden) -->
+      <div id="details" class="details hidden">
+        <div>Latency: <span id="latency">-- ms</span></div>
+        <div>Loaded Latency: <span id="loadedLatency">-- ms</span></div>
+        <div>Upload: <span id="upload">-- Mbps</span></div>
+        <div>IP Address: <span id="ip">--</span></div>
+        <div>Server: <span id="server">--</span></div>
+      </div>
+
+      <div id="status" class="status"></div>
+    </main>
+
+    <footer>
+      <small>Built for learning — powered by gerboo.</small>
+    </footer>
   </div>
 
-  <script src="public/js/speedtest.js" defer></script>
-  <script src="public/js/app.js" defer></script>
+  <!-- FIXED PATH -->
+  <script src="public/js/app.js"></script>
 </body>
 </html>
