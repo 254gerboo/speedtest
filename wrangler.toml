@@ -1,6 +1,5 @@
-name = "YOUR WORKERS NAME"
+name = "speedtest1"
 compatibility_date = "2025-12-15" # set to today's date or any recent date
 account_id = "61ff68e5b806e872c75bb11595ac1917"     # replace after `wrangler login` / from dashboard
 workers_dev = true
 main = "src/index.js"
-

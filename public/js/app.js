@@ -10,7 +10,7 @@ const serverEl = document.getElementById('server');
 const detailsEl = document.getElementById('details');
 const gauge = document.getElementById('gauge');
 
-const BASE_URL = 'https://speedtest-worker.gerboo676.workers.dev';
+const BASE_URL = 'https//speedtest-worker.gerboo676.workers.dev/';
 
 // Animate Mbps smoothly
 function animateSpeed(el, target) {
